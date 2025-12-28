@@ -1,0 +1,46 @@
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      default-filters:
+        - AddRequestHeader=X-Gateway, API-Gateway
+      routes:
+        - id: product-route
+          uri: http://product-service:8081
+          predicates:
+            - Path=/products/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+            - name: CircuitBreaker
+              args:
+                name: productCB
+                fallbackUri: forward:/fallback/product
+        - id: user-route
+          uri: http://user-service:8082
+          predicates:
+            - Path=/users/** 
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 5
+                redis-rate-limiter.burstCapacity: 10
+            - name: CircuitBreaker
+              args:
+                name: userCB
+                fallbackUri: forward:/fallback/user
+
+redis:
+  host: redis
+  port: 6379
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
