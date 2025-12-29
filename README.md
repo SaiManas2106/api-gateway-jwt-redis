@@ -43,16 +43,3 @@ curl -H "Authorization: Bearer <token>" http://localhost:8080/users/me
 - **RBAC checks**: This example forwards `X-User-Roles` to downstream services. For stricter RBAC, apply checks in the gateway filter or use an authorization server.
 - **Production**: For production use, add HTTPS, stronger secret management, token revocation, monitoring and observability.
 
-## What I included
-
-- Full Java source for gateway and two services.
-- Dockerfiles for each service.
-- `docker-compose.yml` to run services + redis.
-- Simple README with build/run instructions.
-
-If you'd like, I can:
-- add a Maven parent / multi-module pom to build everything with a single `mvn -pl ...` command,
-- replace the placeholder JWT secret with env-configured values,
-- add unit tests,
-- or produce a GitHub-ready repo (I can generate a suggested `.gitignore` and GitHub Actions workflow).
-
