@@ -3,3 +3,21 @@ server:
 spring:
   application:
     name: user-service
+  datasource:
+    url: jdbc:h2:mem:users;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  h2:
+    console:
+      enabled: true
+
+security:
+  jwt:
+    secret: ${JWT_SECRET:change-this-local-development-secret-please-use-64-characters}
+    issuer: gateway-security-platform
+    ttl-seconds: 3600
