@@ -2,11 +2,32 @@ server:
   port: 8080
 
 spring:
+  application:
+    name: api-gateway
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
   cloud:
     gateway:
       default-filters:
         - AddRequestHeader=X-Gateway, API-Gateway
       routes:
+        - id: auth-route
+          uri: http://user-service:8082
+          predicates:
+            - Path=/auth/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@identityKeyResolver}"
+                redis-rate-limiter.replenishRate: 3
+                redis-rate-limiter.burstCapacity: 6
+                redis-rate-limiter.requestedTokens: 1
+            - name: CircuitBreaker
+              args:
+                name: authCB
+                fallbackUri: forward:/fallback/user
         - id: product-route
           uri: http://product-service:8081
           predicates:
@@ -14,6 +35,7 @@ spring:
           filters:
             - name: RequestRateLimiter
               args:
+                key-resolver: "#{@identityKeyResolver}"
                 redis-rate-limiter.replenishRate: 10
                 redis-rate-limiter.burstCapacity: 20
                 redis-rate-limiter.requestedTokens: 1
@@ -24,20 +46,23 @@ spring:
         - id: user-route
           uri: http://user-service:8082
           predicates:
-            - Path=/users/** 
+            - Path=/users/**
           filters:
             - name: RequestRateLimiter
               args:
+                key-resolver: "#{@identityKeyResolver}"
                 redis-rate-limiter.replenishRate: 5
                 redis-rate-limiter.burstCapacity: 10
+                redis-rate-limiter.requestedTokens: 1
             - name: CircuitBreaker
               args:
                 name: userCB
                 fallbackUri: forward:/fallback/user
 
-redis:
-  host: redis
-  port: 6379
+security:
+  jwt:
+    secret: ${JWT_SECRET:change-this-local-development-secret-please-use-64-characters}
+    issuer: gateway-security-platform
 
 management:
   endpoints:
