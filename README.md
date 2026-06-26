@@ -1,45 +1,40 @@
-# API Gateway with JWT Auth & Redis Rate Limiting (Spring Cloud Gateway)
+# API Gateway Security Platform
 
-This repository contains a minimal multi-service example:
-- **api-gateway** — Spring Cloud Gateway with JWT global auth filter, Redis-backed rate limiting, Resilience4j circuit breakers and simple fallback endpoints.
-- **product-service** — simple downstream service exposing `/products/**`.
-- **user-service** — simple downstream service exposing `/users/**`.
-- **redis** — Redis used by the gateway rate limiter.
+Production-style Spring Cloud Gateway project for centralized authentication, authorization, traffic control, resilience, and observability across microservices.
 
-## Quick start (using Docker Compose)
+The project currently contains:
 
-1. Build the Maven artifacts and Docker images (from project root)
+- `api-gateway` - Spring Cloud Gateway edge service
+- `user-service` - identity and user profile service
+- `product-service` - protected downstream product API
+- `redis` - backing store for gateway rate limiting
+
+## Current Capabilities
+
+- JWT-protected gateway routes
+- Redis-backed request rate limiting
+- Resilience4j circuit breakers and fallback endpoints
+- Docker Compose local orchestration
+- Maven aggregator build from the repository root
+
+## Build
 
 ```bash
-# build each service jar
-cd api-gateway
-mvn -DskipTests package
-cd ../product-service
-mvn -DskipTests package
-cd ../user-service
-mvn -DskipTests package
-cd ..
+mvn test
+```
 
-# then start using docker-compose
+## Run
+
+```bash
+mvn -pl api-gateway,user-service,product-service -DskipTests package
 docker compose up --build
 ```
 
-2. Get a token (optional helper):
-```bash
-curl -s -X POST http://localhost:8080/auth/token -H "Content-Type: application/json" -d '{"userId":"user123","roles":["USER"]}' | jq
-```
+## Local URLs
 
-3. Call endpoints through gateway:
-```bash
-curl -H "Authorization: Bearer <token>" http://localhost:8080/products
-curl -H "Authorization: Bearer <token>" http://localhost:8080/users/me
-```
+- Gateway: `http://localhost:8080`
+- User service: `http://localhost:8082`
+- Product service: `http://localhost:8081`
+- Gateway actuator health: `http://localhost:8080/actuator/health`
 
-## Notes, troubleshooting & customization
-
-- **Secret key**: The JWT secret in `JwtUtil` is a placeholder. Replace it with a secure secret (and preferably load from env/secret manager).
-- **Versions**: The project uses Spring Boot 3.x and Spring Cloud 2023.x BOM. If you run into dependency issues, update versions in the `pom.xml` files to match your local environment.
-- **Rate limiting**: Configured per-route in `application.yml` using `RequestRateLimiter` backed by Redis.
-- **RBAC checks**: This example forwards `X-User-Roles` to downstream services. For stricter RBAC, apply checks in the gateway filter or use an authorization server.
-- **Production**: For production use, add HTTPS, stronger secret management, token revocation, monitoring and observability.
-
+This branch upgrades the project into a deeper API gateway platform with real auth, route-level authorization, identity-aware rate limiting, tracing, audit-friendly errors, realistic downstream services, tests, and architecture documentation.
