@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   redis:
     image: redis:7
@@ -7,6 +6,10 @@ services:
       - "6379:6379"
   api-gateway:
     build: ./api-gateway
+    environment:
+      JWT_SECRET: ${JWT_SECRET:-change-this-local-development-secret-please-use-64-characters}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     ports:
       - "8080:8080"
     depends_on:
@@ -19,5 +22,7 @@ services:
       - "8081:8081"
   user-service:
     build: ./user-service
+    environment:
+      JWT_SECRET: ${JWT_SECRET:-change-this-local-development-secret-please-use-64-characters}
     ports:
       - "8082:8082"
